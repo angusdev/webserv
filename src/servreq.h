@@ -9,15 +9,11 @@
 
 */
 
-
 #ifndef PG_SERVREQ_H
 #define PG_SERVREQ_H
 
-
 /*  Function prototypes  */
-
 int Service_Request(int conn);
-
 
 #endif  /*  PG_SERVREQ_H  */
 
