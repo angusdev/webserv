@@ -11,6 +11,8 @@
 
 */
 
+#include "winport.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -33,7 +35,7 @@ ssize_t Readline(int sockd, void *vptr, size_t maxlen) {
 
 	for ( n = 1; n < maxlen; n++ ) {
 
-	if ( (rc = read(sockd, &c, 1)) == 1 ) {
+	if ( (rc = recv(sockd, &c, 1, 0)) == 1 ) {
 			*buffer++ = c;
 			if ( c == '\n' )
 			break;
@@ -65,7 +67,7 @@ ssize_t Writeline(int sockd, const void *vptr, size_t n) {
 	nleft  = n;
 
 	while ( nleft > 0 ) {
-	if ( (nwritten = write(sockd, buffer, nleft)) <= 0 ) {
+	if ( (nwritten = send(sockd, buffer, nleft, 0)) <= 0 ) {
 			if ( errno == EINTR )
 				nwritten = 0;
 			else
@@ -82,7 +84,7 @@ ssize_t Writeline(int sockd, const void *vptr, size_t n) {
 int Trim(char * buffer) {
 	int n = strlen(buffer) - 1;
 
-	while ( !isalnum(buffer[n]) && n >= 0 )
+	while (n >= 0 && !isalnum(buffer[n]))
 		buffer[n--] = '\0';
 
 	return 0;

@@ -9,7 +9,12 @@
 
 */
 
+#include "winport.h"
+
+#ifndef _WIN32
 #include <unistd.h>
+#endif
+
 #include <fcntl.h>
 
 #include <string.h>
@@ -33,7 +38,7 @@ int Return_Resource(int conn, int resource, struct ReqInfo * reqinfo) {
 	while ( (i = read(resource, &c, 1)) ) {
 		if ( i < 0 )
 			Error_Quit("Error reading from file.");
-		if ( write(conn, &c, 1) < 1 )
+		if ( send(conn, &c, 1, 0) < 1 )
 			Error_Quit("Error sending file.");
 	}
 
@@ -49,8 +54,14 @@ int Check_Resource(struct ReqInfo * reqinfo) {
 	CleanURL(reqinfo->resource);
 
 	/*  Concatenate resource name to server root, and try to open  */
+#ifdef _WIN32
+	thread_data_type* tls = win_tls_get_value();
+	strcat_s(tls->server_root, sizeof(tls->server_root), reqinfo->resource);
+	return open(tls->server_root, O_RDONLY | O_BINARY);
+#else
 	strcat(server_root, reqinfo->resource);
 	return open(server_root, O_RDONLY);
+#endif
 }
 
 /*  Returns an error message  */

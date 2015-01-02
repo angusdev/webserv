@@ -9,7 +9,11 @@
 
 */
 
+#include "winport.h"
+
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include <stdio.h>
 

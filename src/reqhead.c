@@ -9,7 +9,13 @@
 
 */
 
+#include "winport.h"
+
+#ifdef _WIN32
+#include <time.h>             /*  For select()  */
+#else
 #include <sys/time.h>             /*  For select()  */
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -22,10 +28,15 @@
 /*  Parses a string and updates a request
     information structure if necessary.    */
 int Parse_HTTP_Header(char * buffer, struct ReqInfo * reqinfo) {
-	static int first_header = 1;
+	static static_first_header = 1;
+	int first_header = static_first_header;
 	char      *temp;
 	char      *endptr;
 	int        len;
+
+#ifdef _WIN32
+	first_header = win_tls_get_value()->first_header;
+#endif
 
 	if ( first_header == 1 ) {
 		/*  If first_header is 0, this is the first line of
@@ -80,7 +91,11 @@ int Parse_HTTP_Header(char * buffer, struct ReqInfo * reqinfo) {
 		else
 			reqinfo->type = SIMPLE;
 
-		first_header = 0;
+		static_first_header = first_header = 0;
+#ifdef _WIN32
+		win_tls_get_value()->first_header = first_header;
+#endif
+		
 		return 0;
 	}
 

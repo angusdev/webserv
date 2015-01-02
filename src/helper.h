@@ -11,10 +11,13 @@
 #ifndef PG_HELPER_H
 #define PG_HELPER_H
 
+#ifdef _WIN32
+typedef size_t ssize_t;
+#else
 #include <unistd.h>          /*  for ssize_t data type  */
+#endif
 
 /*  Function prototypes  */
-
 void    Error_Quit(char const * msg);
 int     Trim      (char * buffer);
 int     StrUpper  (char * buffer);

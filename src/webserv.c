@@ -7,13 +7,18 @@
 
   A simple web server
 
+  Migration to Windows by ellab.org 2015
 */
 
+#include "winport.h"
+
+#ifndef _WIN32
 #include <sys/socket.h>       /*  socket definitions        */
 #include <sys/types.h>        /*  socket types              */
 #include <sys/wait.h>         /*  for waitpid()             */
 #include <arpa/inet.h>        /*  inet (3) funtions         */
 #include <unistd.h>           /*  misc. UNIX functions      */
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,8 +31,16 @@
 /*  main() funcion  */
 int main(int argc, char *argv[]) {
  	int listener, conn;
+#ifndef _WIN32
 	pid_t pid;
+#endif
 	struct sockaddr_in servaddr;
+
+#ifdef _WIN32
+	if (win_init() < 0) {
+		Error_Quit("Error in win_init");
+	}
+#endif
 
 	/*  Create socket  */
 	if ( (listener = socket(AF_INET, SOCK_STREAM, 0)) < 0 )
@@ -52,7 +65,9 @@ int main(int argc, char *argv[]) {
 		/*  Wait for connection  */
 		if ( (conn = accept(listener, NULL, NULL)) < 0 )
 			Error_Quit("Error calling accept()");
-
+#ifdef _WIN32
+		win_service_request(conn);
+#else
 		/*  Fork child process to service connection  */
 		if ( (pid = fork()) == 0 ) {
 			/*  This is now the forked child process, so
@@ -77,7 +92,12 @@ int main(int argc, char *argv[]) {
 			Error_Quit("Error closing connection socket in parent.");
 
 		waitpid(-1, NULL, WNOHANG);
+#endif
 	}
+
+#ifdef _WIN32
+	win_exit();
+#endif
 
 	return EXIT_FAILURE;    /*  We shouldn't get here  */
 }
